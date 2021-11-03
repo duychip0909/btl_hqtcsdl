@@ -215,3 +215,36 @@ End
 Close con_tro_KH;
 DeAllocate con_tro_KH;
 
+-- 6. Phân quyền người dùng
+-- tạo login 
+sp_addlogin 'test', '123';
+-- tạo user gắn vào login 
+sp_grantdbaccess 'test', 'duy';
+-- tạo role và cấp quyền cho role
+sp_addrole nguoidung
+grant select, insert, delete, update on KhachHang to nguoidung;
+-- gắn người dùng vào role
+sp_addrolemember 'nguoidung', 'hai';
+
+-- 7. Transaction: Viết giao dịch thêm 1 nhân viên tên là Nguyễn Văn A, nếu đã có 1 nhân viên tên 
+--Nguyễn Văn A không thực hiện giao dịch
+declare @CountName int 
+begin tran them_nv
+insert into Nhanviencongty values
+('NV07', N'Thái Bình Dương', N'Hà Nội', 'Nam', '0854431121')
+select @CountName = count(*) from Nhanviencongty where Ten_nv = N'Thái Bình Dương'
+if (@CountName > 1)
+	begin 
+		rollback tran them_nv
+		print N'Hủy thêm nhân viên'
+	end
+else
+	begin 
+		commit tran them_nv
+		print N'Thực hiện thêm bản ghi'
+	end
+
+select * from Nhanviencongty
+delete from Nhanviencongty where Ten_nv = N'Thái Bình Dương';
+
+
